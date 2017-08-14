@@ -100,7 +100,7 @@ class Game:
   #@+node:peckj.20170814144023.1: *3* display_board
   def display_board(self):
     maxpad = max(sorted(self.board.values(), key=lambda x: sorted(x, reverse=True), reverse=True)[0])+1
-    for key,pile in self.board.items():
+    for key,pile in sorted(self.board.items()):
       b = pile[0] * CHAR_BLACK
       n = pile[1] * CHAR_NEUTRAL
       w = pile[2] * CHAR_WHITE
@@ -114,11 +114,13 @@ class Game:
       return False
     # if it passes, parse it niavely, returning a new hypothetical gamestate
     new_gamestate = self.parse_move(m)
+    if new_gamestate is False:
+      return False
     # ensure the new gamestate doesn't overallocate stock pieces
     if new_gamestate['stock_black'] < 0 or new_gamestate['stock_white'] < 0:
       return False
     # ensure the new gamestate consists of only valid piles
-    if not self.check_board_validity(new_gamestate['board']):
+    if not self.check_board_validity(new_gamestate):
       return False
     # ensure the new gamestate doesn't 'undo' the previous player's turn
     # (compare to the gamestate prior to the opponent's last turn)
@@ -149,14 +151,28 @@ class Game:
     else:
       from_pile = move[0]
       to_pile = move[-1]
+      if from_pile == to_pile:
+        return False
       m = move[1:-1]
-      print m
       player,neutral = (int(x) for x in move[1:-1].split('/'))
-      print 'movement code stubbed in game.parse_move'
-      return [from_pile, to_pile, player, neutral]
+      if player == 0 and neutral == 0:
+        return False
+      gs = self.construct_gamestate()
+      source = gs['board'][from_pile]
+      dest = gs['board'][to_pile]
+      if self.active_player == self.player_black:
+        source = (source[0]-player, source[1]-neutral, source[2])
+        dest = (dest[0]+player, dest[1]+neutral, dest[2])
+      else:
+        source = (source[0], source[1]-neutral, source[2]-player)
+        dest = (dest[0], dest[1]+neutral, dest[2]+player)
+      gs['board'][from_pile] = source
+      gs['board'][to_pile] = dest
+      return gs
       
   #@+node:peckj.20170814154316.1: *4* check_board_validity
-  def check_board_validity(self, board):
+  def check_board_validity(self, gamestate):
+    # check gamestate for 21 stones total of each color
     # check each pile for:
     # at least 7 stones
     # at least one of each color

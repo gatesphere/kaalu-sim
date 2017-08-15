@@ -118,10 +118,10 @@ class Game:
       self.game_log.append('')
     
     pairs = [self.game_log[i:i+2] for i in xrange(0, len(self.game_log), 2)]
-    print pairs
+    #print pairs
     print 'Game log:'
     for idx,pair in enumerate(pairs):
-      print '%s. %s %s' % (idx+1, str(pair[0]).ljust(5), str(pair[1]).ljust(5))
+      print '%s. %s %s' % (idx+1, str(pair[0]).ljust(7), str(pair[1]).ljust(7))
       
   #@+node:peckj.20170814150015.1: *3* valid_move
   def valid_move(self, move):
@@ -245,7 +245,7 @@ class Game:
     newest_pile = sorted(filter(str.isalpha, move))[-1]
     if newest_pile == self.available_piles[-1] and newest_pile != 'g':
       self.available_piles.append(chr(ord(newest_pile)+1))
-    print self.available_piles
+    #print self.available_piles
     
     self.check_primicies()
     if self.active_player == self.player_black:
@@ -282,7 +282,7 @@ def main():
     move = raw_input("%s enter move:" % active_player.name)
     m = game.valid_move(move)
     if m:
-      print m  
+      #print m  
       game.execute_move(move, m)
     else:
       print "Invalid move."
